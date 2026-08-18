@@ -117,12 +117,12 @@ frei erweiterbar sein, und es soll nachgehalten werden, wer welches Spiel gewonn
 - Kein öffentliches Teilen/Mehrbenutzerbetrieb über die eigene Beziehung hinaus.
 - Keine automatische Datenermittlung (z. B. echte Fußballergebnisse via API) – Eingabe erfolgt manuell.
 
-## 9. Offene Fragen / zu klärende Annahmen
+## 9. Entscheidungen (vormals offene Fragen)
 
-1. Soll die Anwendung rein lokal (ein Gerät/Browser) laufen, oder ist eine geräteübergreifende Synchronisation
-   (z. B. über ein kleines Backend) gewünscht?
-2. Sollen Bilder dauerhaft im Browser gespeichert werden (Speicherlimit beachten) oder ist ein externer
-   Speicherort/Backend gewünscht?
-3. Soll es eine Gewichtung/Ausschluss-Logik geben (z. B. Lieblingsspiele öfter, kürzlich gespielte seltener)?
-4. Sollen Punkte/Ratings pro Spiel individuell modelliert werden (z. B. Punktestand beim Quiz) oder reicht
-   ein einfaches "Sieger:in der Runde"?
+1. **Speicherung:** Rein lokale Speicherung im Browser (kein Backend, keine Geräte-Synchronisation) –
+   ausreichend für die private Nutzung zu zweit auf einem gemeinsam genutzten Gerät.
+2. **Bilder:** Werden ebenfalls lokal im Browser gespeichert (kein externer Bild-Hosting-Dienst).
+3. **Wiederholungslogik:** Kürzlich gespielte Spiele werden für die nächsten paar Drehungen mit reduzierter
+   Wahrscheinlichkeit erneut ausgewählt, um Abwechslung zu fördern (siehe FR-5).
+4. **Scoring-Modell:** Pro Runde wird nur der Sieger bzw. die Siegerin oder ein Unentschieden erfasst
+   (kein detaillierter Punktestand je Spiel in v1, siehe FR-11).
