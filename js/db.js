@@ -46,6 +46,10 @@ const DEFAULT_DESCRIPTIONS = {
     old: [],
     new: "Lichtschweif-Duell in Echtzeit: Weicht eurer eigenen und der gegnerischen Spur aus. Wer zuerst crasht, verliert die Runde – beste aus 3 Runden gewinnt.",
   },
+  external_link: {
+    old: [],
+    new: "Schätzt gemeinsam Entfernungen auf der Karte. Wer nach allen Runden die meisten Punkte hat, gewinnt.",
+  },
 };
 
 let dbPromise = null;
@@ -237,6 +241,16 @@ export async function seedIfEmpty() {
       createdAt: now,
       config: {},
     },
+    {
+      id: crypto.randomUUID(),
+      title: "Entfernung raten",
+      description: DEFAULT_DESCRIPTIONS.external_link.new,
+      type: "external_link",
+      active: true,
+      color: "#a0e426",
+      createdAt: now,
+      config: { url: "https://witc.theoi.de/?utm_source=chatgpt.com#r=1BHAD2", rounds: 11 },
+    },
   ];
 
   for (const g of defaults) {
@@ -269,6 +283,23 @@ export async function seedAchtungKurveIfMissing() {
     color: "#4dd0e1",
     createdAt: Date.now(),
     config: {},
+  });
+}
+
+// Adds the "Entfernung raten" default game for browsers that already
+// created their game list before it existed. No-op once present.
+export async function seedExternalLinkGameIfMissing() {
+  const games = await db.getAll("games");
+  if (games.some((g) => g.type === "external_link")) return;
+  await db.put("games", {
+    id: crypto.randomUUID(),
+    title: "Entfernung raten",
+    description: DEFAULT_DESCRIPTIONS.external_link.new,
+    type: "external_link",
+    active: true,
+    color: "#a0e426",
+    createdAt: Date.now(),
+    config: { url: "https://witc.theoi.de/?utm_source=chatgpt.com#r=1BHAD2", rounds: 11 },
   });
 }
 

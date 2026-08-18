@@ -3,13 +3,14 @@ import {
   seedIfEmpty,
   seedFussballMatchesIfEmpty,
   seedAchtungKurveIfMissing,
+  seedExternalLinkGameIfMissing,
   upgradeDefaultDescriptions,
   getPlayers,
   setPlayers,
 } from "./db.js";
 import { uid, pickWeighted, formatDate } from "./utils.js";
 import { Wheel } from "./wheel.js";
-import { renderItemEditor, renderQuizEditor, ITEM_SCHEMAS } from "./itemEditor.js";
+import { renderItemEditor, renderQuizEditor, renderExternalLinkEditor, ITEM_SCHEMAS } from "./itemEditor.js";
 import { renderPlay } from "./play.js";
 
 const GAME_TYPES = [
@@ -20,6 +21,7 @@ const GAME_TYPES = [
   { key: "preisschaetzen", label: "Was kostet das?" },
   { key: "fussball_quiz", label: "Fußballergebnisse-Quiz" },
   { key: "achtung_kurve", label: "Achtung die Kurve" },
+  { key: "external_link", label: "Externes Spiel (Link)" },
   { key: "frei", label: "Freies Spiel (nur Text)" },
 ];
 const TYPE_LABEL = Object.fromEntries(GAME_TYPES.map((t) => [t.key, t.label]));
@@ -237,6 +239,11 @@ function openGameForm(existingGame) {
       h.textContent = "Einträge";
       itemEditorArea.appendChild(h);
       renderItemEditor(itemEditorArea, type, draft.config.items);
+    } else if (type === "external_link") {
+      const h = document.createElement("h3");
+      h.textContent = "Spiellink";
+      itemEditorArea.appendChild(h);
+      renderExternalLinkEditor(itemEditorArea, draft.config);
     }
   }
   renderItemArea(draft.type);
@@ -369,6 +376,7 @@ async function init() {
   await seedIfEmpty();
   await seedFussballMatchesIfEmpty();
   await seedAchtungKurveIfMissing();
+  await seedExternalLinkGameIfMissing();
   await upgradeDefaultDescriptions();
   await refreshData();
 

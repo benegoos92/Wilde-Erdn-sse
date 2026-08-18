@@ -135,6 +135,36 @@ export function renderItemEditor(container, type, items) {
   container.appendChild(addBtn);
 }
 
+// Editor for the "external_link" type: a single URL plus optional round count.
+// Mutates `config` in place ({ url, rounds }).
+export function renderExternalLinkEditor(container, config) {
+  container.innerHTML = "";
+
+  const urlLabel = document.createElement("label");
+  urlLabel.textContent = "Link zum Spiel";
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.required = true;
+  urlInput.placeholder = "https://…";
+  urlInput.value = config.url || "";
+  urlInput.addEventListener("input", () => (config.url = urlInput.value));
+  urlLabel.appendChild(urlInput);
+  container.appendChild(urlLabel);
+
+  const roundsLabel = document.createElement("label");
+  roundsLabel.textContent = "Anzahl Runden (optional)";
+  const roundsInput = document.createElement("input");
+  roundsInput.type = "number";
+  roundsInput.min = "1";
+  roundsInput.step = "1";
+  roundsInput.value = config.rounds ?? "";
+  roundsInput.addEventListener("input", () => {
+    config.rounds = roundsInput.value ? Number(roundsInput.value) : undefined;
+  });
+  roundsLabel.appendChild(roundsInput);
+  container.appendChild(roundsLabel);
+}
+
 // Special editor for Stuttgart-quiz-style question items: {frage, optionen[4], loesungIndex}
 export function renderQuizEditor(container, items) {
   container.innerHTML = "";

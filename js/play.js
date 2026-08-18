@@ -707,6 +707,27 @@ function playAchtungKurve(container, game, players, finish) {
   renderRoundIntro();
 }
 
+// --- Externes Spiel (Link) --------------------------------------------
+function escapeAttr(str) {
+  return String(str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function playExternalLink(container, game, players, finish) {
+  const url = game.config?.url || "";
+  const rounds = game.config?.rounds;
+  container.innerHTML = `
+    <p>${game.description || ""}</p>
+    ${rounds ? `<p class="hint">Rundenanzahl: ${rounds}</p>` : ""}
+    ${
+      url
+        ? `<p><a class="btn btn-primary" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">Spiel öffnen ↗</a></p>`
+        : `<p class="hint">Für dieses Spiel wurde noch kein Link hinterlegt. Bitte über "Spiele verwalten" ergänzen.</p>`
+    }
+    <p class="hint">Wenn ihr fertig gespielt habt, tragt hier den Sieger ein.</p>
+  `;
+  renderWinnerPicker(container, players, null, finish);
+}
+
 // --- Freies Spiel ----------------------------------------------------------
 function playFrei(container, game, players, finish) {
   container.innerHTML = `<p>${game.description || "Viel Spaß bei eurer Challenge!"}</p>`;
@@ -721,6 +742,7 @@ const PLAYERS_BY_TYPE = {
   preisschaetzen: playPreisschaetzen,
   fussball_quiz: playFussballQuiz,
   achtung_kurve: playAchtungKurve,
+  external_link: playExternalLink,
   frei: playFrei,
 };
 
