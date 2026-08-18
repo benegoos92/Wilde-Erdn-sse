@@ -2,6 +2,7 @@ import {
   db,
   seedIfEmpty,
   seedFussballMatchesIfEmpty,
+  seedAchtungKurveIfMissing,
   upgradeDefaultDescriptions,
   getPlayers,
   setPlayers,
@@ -18,6 +19,7 @@ const GAME_TYPES = [
   { key: "durak", label: "Durak-Duell" },
   { key: "preisschaetzen", label: "Was kostet das?" },
   { key: "fussball_quiz", label: "Fußballergebnisse-Quiz" },
+  { key: "achtung_kurve", label: "Achtung die Kurve" },
   { key: "frei", label: "Freies Spiel (nur Text)" },
 ];
 const TYPE_LABEL = Object.fromEntries(GAME_TYPES.map((t) => [t.key, t.label]));
@@ -366,6 +368,7 @@ function setupSettingsForm() {
 async function init() {
   await seedIfEmpty();
   await seedFussballMatchesIfEmpty();
+  await seedAchtungKurveIfMissing();
   await upgradeDefaultDescriptions();
   await refreshData();
 

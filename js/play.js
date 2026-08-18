@@ -465,6 +465,248 @@ function playFussballQuiz(container, game, players, finish) {
   renderStep();
 }
 
+// --- Achtung die Kurve -------------------------------------------------
+function playAchtungKurve(container, game, players, finish) {
+  const ROUNDS = 3;
+  const W = 480;
+  const H = 320;
+  const SPEED = 1.7;
+  const TURN = 0.032;
+  const COUNTDOWN_MS = 1200;
+  const tally = { A: 0, B: 0 };
+  let round = 0;
+
+  function renderRoundIntro() {
+    container.innerHTML = `
+      <p class="progress-dots">Runde ${round + 1} von ${ROUNDS} &nbsp;·&nbsp; Stand: ${players[0]} ${tally.A} : ${tally.B} ${players[1]}</p>
+      <canvas id="kurveCanvas" width="${W}" height="${H}" style="background:#120d16;border-radius:10px;max-width:100%;touch-action:none;"></canvas>
+      <p id="kurveStatus" class="hint" style="font-size:1.3rem;font-weight:700;min-height:1.6em;"></p>
+      <div class="kurve-controls">
+        <div class="side">
+          <strong style="color:#ff6f91;">${players[0]}</strong>
+          <div class="pad">
+            <button type="button" class="btn btn-secondary kurve-btn" data-p="A" data-dir="-1">◀</button>
+            <button type="button" class="btn btn-secondary kurve-btn" data-p="A" data-dir="1">▶</button>
+          </div>
+          <p class="hint">oder ← / →</p>
+        </div>
+        <div class="side">
+          <strong style="color:#6fb1ff;">${players[1]}</strong>
+          <div class="pad">
+            <button type="button" class="btn btn-secondary kurve-btn" data-p="B" data-dir="-1">◀</button>
+            <button type="button" class="btn btn-secondary kurve-btn" data-p="B" data-dir="1">▶</button>
+          </div>
+          <p class="hint">oder A / D</p>
+        </div>
+      </div>
+    `;
+    const canvas = container.querySelector("#kurveCanvas");
+    const statusEl = container.querySelector("#kurveStatus");
+    runRound(canvas, statusEl);
+  }
+
+  function runRound(canvas, statusEl) {
+    const ctx = canvas.getContext("2d");
+    // Canvas pixels stay transparent (only the CSS background looks dark) so
+    // collision checks can tell "empty" (alpha 0) from "trail drawn" apart.
+    ctx.clearRect(0, 0, W, H);
+
+    // Collision is checked against a separate, off-screen canvas that a
+    // player's own fresh trail only joins after a short lag (LAG_FRAMES).
+    // Without that lag, the very next step after the head always overlaps
+    // the segment just drawn (travel per frame < line width), causing an
+    // instant, unavoidable "self-crash" the moment the trail starts.
+    const collCanvas = document.createElement("canvas");
+    collCanvas.width = W;
+    collCanvas.height = H;
+    const cctx = collCanvas.getContext("2d", { willReadFrequently: true });
+    const LAG_FRAMES = 16;
+
+    const pA = { x: W * 0.25, y: H * 0.5, angle: 0, color: "#ff6f91", turn: 0, gap: 0, pending: [] };
+    const pB = { x: W * 0.75, y: H * 0.5, angle: Math.PI, color: "#6fb1ff", turn: 0, gap: 0, pending: [] };
+
+    let leftDown = false;
+    let rightDown = false;
+    let aDown = false;
+    let dDown = false;
+
+    function applyTurn() {
+      pA.turn = (rightDown ? 1 : 0) - (leftDown ? 1 : 0);
+      pB.turn = (dDown ? 1 : 0) - (aDown ? 1 : 0);
+    }
+    function keydown(e) {
+      if (e.key === "ArrowLeft") { leftDown = true; e.preventDefault(); }
+      else if (e.key === "ArrowRight") { rightDown = true; e.preventDefault(); }
+      else if (e.key === "a" || e.key === "A") aDown = true;
+      else if (e.key === "d" || e.key === "D") dDown = true;
+      else return;
+      applyTurn();
+    }
+    function keyup(e) {
+      if (e.key === "ArrowLeft") leftDown = false;
+      else if (e.key === "ArrowRight") rightDown = false;
+      else if (e.key === "a" || e.key === "A") aDown = false;
+      else if (e.key === "d" || e.key === "D") dDown = false;
+      else return;
+      applyTurn();
+    }
+    window.addEventListener("keydown", keydown);
+    window.addEventListener("keyup", keyup);
+
+    const padBtns = container.querySelectorAll(".kurve-btn");
+    const padHandlers = [];
+    padBtns.forEach((btn) => {
+      const p = btn.dataset.p === "A" ? pA : pB;
+      const dir = Number(btn.dataset.dir);
+      const start = (e) => { e.preventDefault(); p.turn = dir; };
+      const stop = () => { if (p.turn === dir) p.turn = 0; };
+      btn.addEventListener("pointerdown", start);
+      btn.addEventListener("pointerup", stop);
+      btn.addEventListener("pointerleave", stop);
+      btn.addEventListener("pointercancel", stop);
+      padHandlers.push([btn, start, stop]);
+    });
+
+    let cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      window.removeEventListener("keydown", keydown);
+      window.removeEventListener("keyup", keyup);
+      padHandlers.forEach(([btn, start, stop]) => {
+        btn.removeEventListener("pointerdown", start);
+        btn.removeEventListener("pointerup", stop);
+        btn.removeEventListener("pointerleave", stop);
+        btn.removeEventListener("pointercancel", stop);
+      });
+    }
+
+    function stepPlayer(p, dt) {
+      p.angle += p.turn * TURN * dt;
+      const nx = p.x + Math.cos(p.angle) * SPEED * dt;
+      const ny = p.y + Math.sin(p.angle) * SPEED * dt;
+      let crashed = nx < 3 || nx > W - 3 || ny < 3 || ny > H - 3;
+      if (!crashed) {
+        const px = cctx.getImageData(nx | 0, ny | 0, 1, 1).data;
+        if (px[3] > 10) crashed = true;
+      }
+      return { nx, ny, crashed };
+    }
+
+    let phase = "countdown";
+    let countdownStart = null;
+    let last = null;
+
+    function frame(ts) {
+      if (!canvas.isConnected) { cleanup(); return; }
+
+      if (phase === "countdown") {
+        if (countdownStart === null) countdownStart = ts;
+        const remaining = COUNTDOWN_MS - (ts - countdownStart);
+        if (remaining > 800) statusEl.textContent = "3";
+        else if (remaining > 400) statusEl.textContent = "2";
+        else if (remaining > 0) statusEl.textContent = "1";
+        else if (remaining > -400) statusEl.textContent = "Los!";
+        else {
+          phase = "running";
+          statusEl.textContent = "";
+        }
+        requestAnimationFrame(frame);
+        return;
+      }
+
+      if (last === null) last = ts;
+      const dt = Math.min(ts - last, 40) / 16.7;
+      last = ts;
+
+      const resA = stepPlayer(pA, dt);
+      const resB = stepPlayer(pB, dt);
+      const crashedNow = [];
+      if (resA.crashed) crashedNow.push("A");
+      if (resB.crashed) crashedNow.push("B");
+
+      [[pA, resA], [pB, resB]].forEach(([p, res]) => {
+        if (res.crashed) return;
+        if (p.gap > 0) {
+          p.gap -= dt;
+        } else if (Math.random() < 0.0025 * dt) {
+          p.gap = 8 + Math.random() * 6;
+        } else {
+          const seg = { x1: p.x, y1: p.y, x2: res.nx, y2: res.ny, color: p.color };
+          ctx.strokeStyle = seg.color;
+          ctx.lineWidth = 3;
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+
+          p.pending.push(seg);
+          if (p.pending.length > LAG_FRAMES) {
+            const old = p.pending.shift();
+            cctx.strokeStyle = old.color;
+            cctx.lineWidth = 3;
+            cctx.lineCap = "round";
+            cctx.beginPath();
+            cctx.moveTo(old.x1, old.y1);
+            cctx.lineTo(old.x2, old.y2);
+            cctx.stroke();
+          }
+        }
+        p.x = res.nx;
+        p.y = res.ny;
+      });
+
+      [pA, pB].forEach((p) => {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      if (crashedNow.length > 0) {
+        cleanup();
+        finishRound(crashedNow);
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function finishRound(crashedNow) {
+    round++;
+    let roundWinner;
+    if (crashedNow.length === 2) roundWinner = "tie";
+    else roundWinner = crashedNow[0] === "A" ? "B" : "A";
+    if (roundWinner !== "tie") tally[roundWinner]++;
+
+    const status = document.createElement("p");
+    status.innerHTML =
+      roundWinner === "tie"
+        ? "<strong>Unentschieden!</strong> Beide gleichzeitig gecrasht."
+        : `<strong>${roundWinner === "A" ? players[0] : players[1]}</strong> gewinnt diese Runde!`;
+    container.appendChild(status);
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn btn-primary";
+    nextBtn.textContent = round < ROUNDS ? "Nächste Runde" : "Ergebnis anzeigen";
+    nextBtn.addEventListener("click", () => {
+      if (round < ROUNDS) renderRoundIntro();
+      else finishGame();
+    });
+    container.appendChild(nextBtn);
+  }
+
+  function finishGame() {
+    container.innerHTML = `<p>Spiel beendet! Rundenstand: <strong>${players[0]} ${tally.A}</strong> – <strong>${tally.B} ${players[1]}</strong></p>`;
+    const suggestion = tally.A > tally.B ? "A" : tally.B > tally.A ? "B" : "draw";
+    renderWinnerPicker(container, players, suggestion, finish);
+  }
+
+  renderRoundIntro();
+}
+
 // --- Freies Spiel ----------------------------------------------------------
 function playFrei(container, game, players, finish) {
   container.innerHTML = `<p>${game.description || "Viel Spaß bei eurer Challenge!"}</p>`;
@@ -478,6 +720,7 @@ const PLAYERS_BY_TYPE = {
   durak: playDurak,
   preisschaetzen: playPreisschaetzen,
   fussball_quiz: playFussballQuiz,
+  achtung_kurve: playAchtungKurve,
   frei: playFrei,
 };
 

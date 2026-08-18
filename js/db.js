@@ -42,6 +42,10 @@ const DEFAULT_DESCRIPTIONS = {
     old: ["Ratet die Ergebnisse vergangener Spiele eurer Fußballmannschaft aus den letzten zwei Saisons."],
     new: "Erinnert ihr euch noch? Ratet die Ergebnisse vergangener Spiele eurer Fußballmannschaft aus den letzten beiden Saisons.",
   },
+  achtung_kurve: {
+    old: [],
+    new: "Lichtschweif-Duell in Echtzeit: Weicht eurer eigenen und der gegnerischen Spur aus. Wer zuerst crasht, verliert die Runde – beste aus 3 Runden gewinnt.",
+  },
 };
 
 let dbPromise = null;
@@ -223,6 +227,16 @@ export async function seedIfEmpty() {
         items: FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m })),
       },
     },
+    {
+      id: crypto.randomUUID(),
+      title: "Achtung die Kurve",
+      description: DEFAULT_DESCRIPTIONS.achtung_kurve.new,
+      type: "achtung_kurve",
+      active: true,
+      color: "#4dd0e1",
+      createdAt: now,
+      config: {},
+    },
   ];
 
   for (const g of defaults) {
@@ -239,6 +253,23 @@ export async function seedFussballMatchesIfEmpty() {
   if (!game || (game.config.items && game.config.items.length > 0)) return;
   game.config.items = FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m }));
   await db.put("games", game);
+}
+
+// Adds the "Achtung die Kurve" default game for browsers that already
+// created their game list before it existed. No-op once present.
+export async function seedAchtungKurveIfMissing() {
+  const games = await db.getAll("games");
+  if (games.some((g) => g.type === "achtung_kurve")) return;
+  await db.put("games", {
+    id: crypto.randomUUID(),
+    title: "Achtung die Kurve",
+    description: DEFAULT_DESCRIPTIONS.achtung_kurve.new,
+    type: "achtung_kurve",
+    active: true,
+    color: "#4dd0e1",
+    createdAt: Date.now(),
+    config: {},
+  });
 }
 
 // Refreshes the wording of default game descriptions for browsers that
