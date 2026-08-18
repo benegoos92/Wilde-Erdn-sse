@@ -70,6 +70,7 @@ function setupTabs() {
       if (btn.dataset.tab === "history") renderHistoryTab();
       if (btn.dataset.tab === "settings") renderSettingsTab();
       if (btn.dataset.tab === "games") renderGamesTab();
+      if (btn.dataset.tab === "test") renderTestTab();
     });
   });
 }
@@ -96,13 +97,14 @@ async function handleSpin() {
   openResultModal(target);
 }
 
-function openResultModal(game) {
+function openResultModal(game, { isTest = false } = {}) {
   const modal = document.getElementById("resultModal");
   const body = document.getElementById("resultModalBody");
   body.innerHTML = `
-    <h2>${game.title}</h2>
+    <h2>${isTest ? "🧪 Test: " : ""}${game.title}</h2>
     <p class="type-tag">${TYPE_LABEL[game.type] || ""}</p>
     <p>${game.description || ""}</p>
+    ${isTest ? '<p class="hint">Testlauf – das Ergebnis wird nicht in Verlauf/Rangliste gespeichert.</p>' : ""}
     <div class="winner-btns">
       <button class="btn btn-primary" id="startPlayBtn">Jetzt spielen</button>
       <button class="btn btn-secondary" id="skipPlayBtn">Schließen</button>
@@ -116,14 +118,16 @@ function openResultModal(game) {
     body.querySelector(".winner-btns").remove();
     const playContainer = body.querySelector("#playContainer");
     renderPlay(playContainer, game, players, async (winnerKey) => {
-      const session = {
-        id: uid(),
-        gameId: game.id,
-        date: Date.now(),
-        winner: winnerKey,
-      };
-      await db.put("sessions", session);
-      await refreshData();
+      if (!isTest) {
+        const session = {
+          id: uid(),
+          gameId: game.id,
+          date: Date.now(),
+          winner: winnerKey,
+        };
+        await db.put("sessions", session);
+        await refreshData();
+      }
       closeResultModal();
     });
   });
@@ -170,6 +174,33 @@ function renderGamesTab() {
       await refreshData();
       renderGamesTab();
       renderWheelTab();
+    });
+    list.appendChild(card);
+  });
+}
+
+// ---------------------------------------------------------------- test mode tab
+function renderTestTab() {
+  const list = document.getElementById("testGamesList");
+  list.innerHTML = "";
+  if (games.length === 0) {
+    list.innerHTML = `<p class="empty-state">Noch keine Spiele angelegt.</p>`;
+    return;
+  }
+  games.forEach((game) => {
+    const card = document.createElement("div");
+    card.className = "game-card" + (game.active ? "" : " inactive");
+    card.innerHTML = `
+      <span class="swatch" style="background:${game.color || "#888"}"></span>
+      <span class="type-tag">${TYPE_LABEL[game.type] || game.type}</span>
+      <h3>${game.title}</h3>
+      <p>${game.description || ""}</p>
+      <div class="card-actions">
+        <button data-action="test">🧪 Testen</button>
+      </div>
+    `;
+    card.querySelector('[data-action="test"]').addEventListener("click", () => {
+      openResultModal(game, { isTest: true });
     });
     list.appendChild(card);
   });
@@ -366,6 +397,7 @@ function setupSettingsForm() {
     await refreshData();
     renderWheelTab();
     renderGamesTab();
+    renderTestTab();
     renderHistoryTab();
     renderSettingsTab();
   });
@@ -383,6 +415,7 @@ async function init() {
   wheel = new Wheel(document.getElementById("wheelCanvas"));
   renderWheelTab();
   renderGamesTab();
+  renderTestTab();
 
   setupTabs();
   setupSettingsForm();
