@@ -14,6 +14,36 @@ const FUSSBALL_MATCHES = [
   { datum: "29.03.2026", gegner: "SV Horrheim", ergebnisHeim: 3, ergebnisGegner: 2, wettbewerb: "Saison 25/26" },
 ];
 
+// Default game descriptions, keyed by type. `old` holds every previous
+// wording so upgradeDefaultDescriptions() can recognize an unedited default
+// and refresh it — but leaves the text alone if the user customized it.
+const DEFAULT_DESCRIPTIONS = {
+  urlaubsbilder: {
+    old: ["Ladet eigene Urlaubsfotos hoch. Die andere Person muss Ort und/oder Zeitpunkt der Aufnahme erraten."],
+    new: "Ladet eure schönsten Urlaubsfotos hoch – wer errät, wann und wo sie entstanden sind?",
+  },
+  freio: {
+    old: ["Ladet Fotos von Freio hoch und bringt sie unabhängig voneinander in eure Lieblingsreihenfolge."],
+    new: "Fotos von Freio hochladen und unabhängig voneinander in eure Lieblingsreihenfolge bringen – seid ihr euch einig, welches Bild das beste ist?",
+  },
+  stuttgart_quiz: {
+    old: ["Fun Facts über Stuttgart – wer weiß mehr?"],
+    new: "Kurioses und Wissenswertes über Stuttgart – beantwortet die Fragen und sammelt Punkte. Wer kennt eure Stadt besser?",
+  },
+  durak: {
+    old: ["Ein Duell im Kartenspiel Durak zu zweit. Nach der Partie den Sieger eintragen."],
+    new: "Klassisches Kartenduell zu zweit: Spielt eine Partie Durak und tragt danach den Sieger ein.",
+  },
+  preisschaetzen: {
+    old: ["Schätzt die Preise von Gegenständen oder Dienstleistungen. Wer näher dran ist, gewinnt die Runde."],
+    new: "Alltägliches, Kurioses oder Luxus – schätzt die Preise verschiedener Dinge. Wer am nächsten dran ist, gewinnt die Runde.",
+  },
+  fussball_quiz: {
+    old: ["Ratet die Ergebnisse vergangener Spiele eurer Fußballmannschaft aus den letzten zwei Saisons."],
+    new: "Erinnert ihr euch noch? Ratet die Ergebnisse vergangener Spiele eurer Fußballmannschaft aus den letzten beiden Saisons.",
+  },
+};
+
 let dbPromise = null;
 
 function openDB() {
@@ -108,8 +138,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Urlaubsbilder-Raten",
-      description:
-        "Ladet eigene Urlaubsfotos hoch. Die andere Person muss Ort und/oder Zeitpunkt der Aufnahme erraten.",
+      description: DEFAULT_DESCRIPTIONS.urlaubsbilder.new,
       type: "urlaubsbilder",
       active: true,
       color: "#ff6f91",
@@ -119,8 +148,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Freio-Bilder-Ranking",
-      description:
-        "Ladet Fotos von Freio hoch und bringt sie unabhängig voneinander in eure Lieblingsreihenfolge.",
+      description: DEFAULT_DESCRIPTIONS.freio.new,
       type: "freio",
       active: true,
       color: "#ffb86f",
@@ -130,7 +158,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Stuttgart-Quiz",
-      description: "Fun Facts über Stuttgart – wer weiß mehr?",
+      description: DEFAULT_DESCRIPTIONS.stuttgart_quiz.new,
       type: "stuttgart_quiz",
       active: true,
       color: "#7ee0c3",
@@ -166,8 +194,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Durak-Duell",
-      description:
-        "Ein Duell im Kartenspiel Durak zu zweit. Nach der Partie den Sieger eintragen.",
+      description: DEFAULT_DESCRIPTIONS.durak.new,
       type: "durak",
       active: true,
       color: "#c792ea",
@@ -177,8 +204,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Was kostet das?",
-      description:
-        "Schätzt die Preise von Gegenständen oder Dienstleistungen. Wer näher dran ist, gewinnt die Runde.",
+      description: DEFAULT_DESCRIPTIONS.preisschaetzen.new,
       type: "preisschaetzen",
       active: true,
       color: "#ffd166",
@@ -188,8 +214,7 @@ export async function seedIfEmpty() {
     {
       id: crypto.randomUUID(),
       title: "Fußballergebnisse-Quiz",
-      description:
-        "Ratet die Ergebnisse vergangener Spiele eurer Fußballmannschaft aus den letzten zwei Saisons.",
+      description: DEFAULT_DESCRIPTIONS.fussball_quiz.new,
       type: "fussball_quiz",
       active: true,
       color: "#6fb1ff",
@@ -214,6 +239,21 @@ export async function seedFussballMatchesIfEmpty() {
   if (!game || (game.config.items && game.config.items.length > 0)) return;
   game.config.items = FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m }));
   await db.put("games", game);
+}
+
+// Refreshes the wording of default game descriptions for browsers that
+// already created them. Only touches a game if its description still
+// matches a known previous default wording — custom edits are left as-is.
+export async function upgradeDefaultDescriptions() {
+  const games = await db.getAll("games");
+  for (const game of games) {
+    const entry = DEFAULT_DESCRIPTIONS[game.type];
+    if (!entry) continue;
+    if (entry.old.includes(game.description) && game.description !== entry.new) {
+      game.description = entry.new;
+      await db.put("games", game);
+    }
+  }
 }
 
 export async function getPlayers() {

@@ -1,4 +1,11 @@
-import { db, seedIfEmpty, seedFussballMatchesIfEmpty, getPlayers, setPlayers } from "./db.js";
+import {
+  db,
+  seedIfEmpty,
+  seedFussballMatchesIfEmpty,
+  upgradeDefaultDescriptions,
+  getPlayers,
+  setPlayers,
+} from "./db.js";
 import { uid, pickWeighted, formatDate } from "./utils.js";
 import { Wheel } from "./wheel.js";
 import { renderItemEditor, renderQuizEditor, ITEM_SCHEMAS } from "./itemEditor.js";
@@ -359,6 +366,7 @@ function setupSettingsForm() {
 async function init() {
   await seedIfEmpty();
   await seedFussballMatchesIfEmpty();
+  await upgradeDefaultDescriptions();
   await refreshData();
 
   wheel = new Wheel(document.getElementById("wheelCanvas"));
