@@ -2,6 +2,18 @@
 const DB_NAME = "dncWheelDB";
 const DB_VERSION = 1;
 
+// Reale Ergebnisse SportVg Feuerbach W1 (vom Nutzer bereitgestellt, aus
+// https://www.fupa.net/team/sportvg-feuerbach-w1-2024-25 und -2025-26).
+const FUSSBALL_MATCHES = [
+  { datum: "10.11.2024", gegner: "VfB Obertürkheim", ergebnisHeim: 1, ergebnisGegner: 0, wettbewerb: "Saison 24/25" },
+  { datum: "24.11.2024", gegner: "FSV 08 Bietigheim-Bissingen", ergebnisHeim: 3, ergebnisGegner: 3, wettbewerb: "Saison 24/25" },
+  { datum: "06.04.2025", gegner: "TV Aldingen (Auswärts)", ergebnisHeim: 6, ergebnisGegner: 1, wettbewerb: "Saison 24/25" },
+  { datum: "25.05.2025", gegner: "TSV Nellmersbach", ergebnisHeim: 1, ergebnisGegner: 4, wettbewerb: "Saison 24/25" },
+  { datum: "21.09.2025", gegner: "TSV Deizisau", ergebnisHeim: 6, ergebnisGegner: 2, wettbewerb: "Saison 25/26" },
+  { datum: "22.03.2026", gegner: "TSV Heumaden", ergebnisHeim: 6, ergebnisGegner: 0, wettbewerb: "Saison 25/26" },
+  { datum: "29.03.2026", gegner: "SV Horrheim", ergebnisHeim: 3, ergebnisGegner: 2, wettbewerb: "Saison 25/26" },
+];
+
 let dbPromise = null;
 
 function openDB() {
@@ -182,13 +194,26 @@ export async function seedIfEmpty() {
       active: true,
       color: "#6fb1ff",
       createdAt: now,
-      config: { items: [] },
+      config: {
+        items: FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m })),
+      },
     },
   ];
 
   for (const g of defaults) {
     await db.put("games", g);
   }
+}
+
+// Backfills the real match results into the Fußballergebnisse-Quiz game for
+// browsers that already created it (as an empty list) before the results
+// were available. No-op once the game has items.
+export async function seedFussballMatchesIfEmpty() {
+  const games = await db.getAll("games");
+  const game = games.find((g) => g.type === "fussball_quiz");
+  if (!game || (game.config.items && game.config.items.length > 0)) return;
+  game.config.items = FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m }));
+  await db.put("games", game);
 }
 
 export async function getPlayers() {
