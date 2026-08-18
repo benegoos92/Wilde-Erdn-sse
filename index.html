@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Date-Night-Glücksrad</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>🎡 Date-Night-Glücksrad</h1>
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="wheel">Rad</button>
+    <button class="tab-btn" data-tab="games">Spiele verwalten</button>
+    <button class="tab-btn" data-tab="history">Verlauf &amp; Rangliste</button>
+    <button class="tab-btn" data-tab="settings">Einstellungen</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- WHEEL TAB -->
+  <section id="tab-wheel" class="tab-panel active">
+    <div class="wheel-area">
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheelCanvas" width="480" height="480"></canvas>
+      </div>
+      <button id="spinBtn" class="btn btn-primary btn-spin">Drehen 🎲</button>
+      <p id="wheelHint" class="hint"></p>
+    </div>
+  </section>
+
+  <!-- GAMES TAB -->
+  <section id="tab-games" class="tab-panel">
+    <div class="panel-header">
+      <h2>Spiele</h2>
+      <button id="newGameBtn" class="btn btn-primary">+ Neues Spiel</button>
+    </div>
+    <div id="gamesList" class="games-list"></div>
+  </section>
+
+  <!-- HISTORY TAB -->
+  <section id="tab-history" class="tab-panel">
+    <h2>Rangliste</h2>
+    <div id="leaderboard" class="leaderboard"></div>
+    <h2>Verlauf</h2>
+    <div id="historyList" class="history-list"></div>
+  </section>
+
+  <!-- SETTINGS TAB -->
+  <section id="tab-settings" class="tab-panel">
+    <h2>Einstellungen</h2>
+    <form id="playerForm" class="player-form">
+      <label>Spieler:in A
+        <input type="text" id="playerAName" maxlength="30" required>
+      </label>
+      <label>Spieler:in B
+        <input type="text" id="playerBName" maxlength="30" required>
+      </label>
+      <button type="submit" class="btn btn-primary">Speichern</button>
+      <span id="playerSaveHint" class="hint"></span>
+    </form>
+    <hr>
+    <h3>Daten</h3>
+    <p class="hint">Alle Daten (Spiele, Fotos, Verlauf) werden ausschließlich lokal in diesem Browser gespeichert.</p>
+    <button id="exportBtn" class="btn btn-secondary">Daten exportieren (JSON)</button>
+    <button id="resetBtn" class="btn btn-danger">Alle Daten löschen</button>
+  </section>
+
+</main>
+
+<!-- MODAL: Game result / spin result -->
+<div id="resultModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="modal-close" id="resultModalClose">×</button>
+    <div id="resultModalBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: Add/Edit game -->
+<div id="gameFormModal" class="modal-backdrop hidden">
+  <div class="modal modal-wide">
+    <button class="modal-close" id="gameFormModalClose">×</button>
+    <div id="gameFormModalBody"></div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
