@@ -289,7 +289,7 @@ function playStuttgartQuiz(container, game, players, finish) {
 
 // --- Durak-Duell -------------------------------------------------------
 function playDurak(container, game, players, finish) {
-  container.innerHTML = `<p>${game.description || "Spielt eine Partie Durak zu zweit."}</p>
+  container.innerHTML = `<p class="desc-text">${game.description || "Spielt eine Partie Durak zu zweit."}</p>
     <p class="hint">Wenn ihr fertig gespielt habt, tragt hier den Sieger ein.</p>`;
   renderWinnerPicker(container, players, null, finish);
 }
@@ -716,7 +716,7 @@ function playExternalLink(container, game, players, finish) {
   const url = game.config?.url || "";
   const rounds = game.config?.rounds;
   container.innerHTML = `
-    <p>${game.description || ""}</p>
+    <p class="desc-text">${game.description || ""}</p>
     ${rounds ? `<p class="hint">Rundenanzahl: ${rounds}</p>` : ""}
     ${
       url
@@ -730,7 +730,7 @@ function playExternalLink(container, game, players, finish) {
 
 // --- Freies Spiel ----------------------------------------------------------
 function playFrei(container, game, players, finish) {
-  container.innerHTML = `<p>${game.description || "Viel Spaß bei eurer Challenge!"}</p>`;
+  container.innerHTML = `<p class="desc-text">${game.description || "Viel Spaß bei eurer Challenge!"}</p>`;
   renderWinnerPicker(container, players, null, finish);
 }
 

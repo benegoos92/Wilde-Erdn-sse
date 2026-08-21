@@ -103,7 +103,7 @@ function openResultModal(game, { isTest = false } = {}) {
   body.innerHTML = `
     <h2>${isTest ? "🧪 Test: " : ""}${game.title}</h2>
     <p class="type-tag">${TYPE_LABEL[game.type] || ""}</p>
-    <p>${game.description || ""}</p>
+    <p class="desc-text">${game.description || ""}</p>
     ${isTest ? '<p class="hint">Testlauf – das Ergebnis wird nicht in Verlauf/Rangliste gespeichert.</p>' : ""}
     <div class="winner-btns">
       <button class="btn btn-primary" id="startPlayBtn">Jetzt spielen</button>
@@ -153,7 +153,7 @@ function renderGamesTab() {
       <span class="swatch" style="background:${game.color || "#888"}"></span>
       <span class="type-tag">${TYPE_LABEL[game.type] || game.type}</span>
       <h3>${game.title}</h3>
-      <p>${game.description || ""}</p>
+      <p class="desc-text">${game.description || ""}</p>
       <div class="card-actions">
         <button data-action="toggle">${game.active ? "Deaktivieren" : "Aktivieren"}</button>
         <button data-action="edit">Bearbeiten</button>
@@ -194,7 +194,7 @@ function renderTestTab() {
       <span class="swatch" style="background:${game.color || "#888"}"></span>
       <span class="type-tag">${TYPE_LABEL[game.type] || game.type}</span>
       <h3>${game.title}</h3>
-      <p>${game.description || ""}</p>
+      <p class="desc-text">${game.description || ""}</p>
       <div class="card-actions">
         <button data-action="test">🧪 Testen</button>
       </div>
