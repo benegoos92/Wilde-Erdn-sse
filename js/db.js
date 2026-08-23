@@ -153,6 +153,21 @@ const STUTTGART_QUIZ_EXTRA_QUESTIONS = [
     ],
     loesungIndex: 0,
   },
+  {
+    frage: "Wie lang ist die Königstraße, Stuttgarts zentrale Einkaufsstraße, ungefähr?",
+    optionen: ["Rund 1,2 km", "Rund 500 m", "Rund 2,5 km", "Rund 300 m"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Welcher Stadtteil Stuttgarts hat die meisten Einwohner:innen?",
+    optionen: ["Weilimdorf", "Bad Cannstatt", "Feuerbach", "Zuffenhausen"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Wie viele Restaurants in Stuttgart tragen aktuell einen Michelin-Stern?",
+    optionen: ["8", "3", "15", "1"],
+    loesungIndex: 0,
+  },
 ];
 
 // Default game descriptions, keyed by type. `old` holds every previous
