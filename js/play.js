@@ -101,7 +101,11 @@ function playFreio(container, game, players, finish) {
   const items = game.config.items || [];
   if (items.length < 2) {
     container.innerHTML = `<p class="hint">Für dieses Spiel werden mindestens zwei Fotos benötigt. Fügt zuerst Fotos über "Spiele verwalten" hinzu.</p>`;
-    finish(null, null);
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "btn btn-primary";
+    closeBtn.textContent = "Schließen";
+    closeBtn.addEventListener("click", () => finish(null, null));
+    container.appendChild(closeBtn);
     return;
   }
 
