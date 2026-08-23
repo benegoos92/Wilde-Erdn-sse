@@ -118,7 +118,13 @@ function playFreio(container, game, players, finish) {
       list.innerHTML = "";
       order.forEach((item, idx) => {
         const li = document.createElement("li");
-        li.innerHTML = `<span>${idx + 1}.</span><img src="${item.image}"><span>${item.label || ""}</span>`;
+        li.innerHTML = `
+          <span class="rank-num">${idx + 1}</span>
+          <img src="${item.image}">
+          <div class="rank-footer">
+            <span class="rank-label">${item.label || ""}</span>
+          </div>
+        `;
         const btns = document.createElement("span");
         btns.className = "rank-btns";
         const up = document.createElement("button");
@@ -137,7 +143,7 @@ function playFreio(container, game, players, finish) {
         });
         btns.appendChild(up);
         btns.appendChild(down);
-        li.appendChild(btns);
+        li.querySelector(".rank-footer").appendChild(btns);
         list.appendChild(li);
       });
     }
@@ -186,12 +192,7 @@ function playFreio(container, game, players, finish) {
         const li = document.createElement("li");
         const img = document.createElement("img");
         img.src = item.image;
-        img.style.width = "40px";
-        img.style.height = "40px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "6px";
-        img.style.verticalAlign = "middle";
-        img.style.marginRight = "0.4rem";
+        img.style.marginRight = "0.6rem";
         li.appendChild(img);
         ol.appendChild(li);
       });
