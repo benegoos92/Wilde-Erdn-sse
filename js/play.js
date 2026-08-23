@@ -176,8 +176,7 @@ function playFreio(container, game, players, finish) {
 
 // --- Stuttgart-Quiz --------------------------------------------------------
 function playStuttgartQuiz(container, game, players, finish) {
-  const pool = shuffle(game.config.items || []);
-  const items = pool.slice(0, Math.min(5, pool.length));
+  const items = shuffle(game.config.items || []);
   if (items.length === 0) {
     container.innerHTML = `<p class="hint">Für dieses Quiz wurden noch keine Fragen hinterlegt. Fügt zuerst Fragen über "Spiele verwalten" hinzu.</p>`;
     renderWinnerPicker(container, players, null, finish);
