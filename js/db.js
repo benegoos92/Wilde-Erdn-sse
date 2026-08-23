@@ -304,18 +304,25 @@ export async function seedFussballMatchesIfEmpty() {
   await db.put("games", game);
 }
 
-// Backfills the Stuttgart-themed items into the Was-kostet-das-Spiel for
-// browsers that already created it (as an empty list). No-op once it has items.
+// Adds the Stuttgart-themed items to the Was-kostet-das-Spiel for browsers
+// that already created it, appending only the ones still missing (matched
+// by name) so any item the user added themselves is kept untouched.
 export async function seedPreisschaetzenItemsIfEmpty() {
   const games = await db.getAll("games");
   const game = games.find((g) => g.type === "preisschaetzen");
-  if (!game || (game.config.items && game.config.items.length > 0)) return;
-  game.config.items = PREISSCHAETZEN_ITEMS.map(({ name, preis, bg, emoji }) => ({
-    id: crypto.randomUUID(),
-    name,
-    preis,
-    image: svgIcon(bg, emoji),
-  }));
+  if (!game) return;
+  if (!game.config.items) game.config.items = [];
+  const existingNames = new Set(game.config.items.map((i) => i.name));
+  const missing = PREISSCHAETZEN_ITEMS.filter(({ name }) => !existingNames.has(name));
+  if (missing.length === 0) return;
+  game.config.items.push(
+    ...missing.map(({ name, preis, bg, emoji }) => ({
+      id: crypto.randomUUID(),
+      name,
+      preis,
+      image: svgIcon(bg, emoji),
+    }))
+  );
   await db.put("games", game);
 }
 
