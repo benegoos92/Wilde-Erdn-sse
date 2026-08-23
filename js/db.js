@@ -14,6 +14,34 @@ const FUSSBALL_MATCHES = [
   { datum: "29.03.2026", gegner: "SV Horrheim", ergebnisHeim: 3, ergebnisGegner: 2, wettbewerb: "Saison 25/26" },
 ];
 
+// Simple flat-icon "photo" for a Was-kostet-das-Gegenstand: a colored square
+// with a big emoji, used since no real product photo is available. Renders
+// fine as a normal <img src="data:image/svg+xml,..."> anywhere in the app.
+function svgIcon(bg, emoji) {
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">` +
+    `<rect width="400" height="400" rx="32" fill="${bg}"/>` +
+    `<text x="200" y="230" font-size="200" text-anchor="middle" dominant-baseline="middle">${emoji}</text>` +
+    `</svg>`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+
+// Preisschätzen-Gegenstände/Dienstleistungen mit Stuttgart-Bezug (Preise
+// recherchiert, Stand 2026). Reine Icon-Grafiken statt Fotos, da keine
+// echten Produktbilder verfügbar sind.
+const PREISSCHAETZEN_ITEMS = [
+  { name: "Fernsehturm Stuttgart – Eintritt (Erwachsene)", preis: 12.5, bg: "#4a90d9", emoji: "📡" },
+  { name: "Mercedes-Benz Museum – Eintritt (Erwachsene)", preis: 10, bg: "#2b2b2b", emoji: "🚗" },
+  { name: "SSB KurzstreckenTicket (Stadtbahn/Bus)", preis: 2.1, bg: "#d94f2b", emoji: "🚊" },
+  { name: "VfB Stuttgart Heimtrikot 25/26 (Erwachsene)", preis: 84.99, bg: "#e2231a", emoji: "👕" },
+  { name: "Trollinger „Cannstatter Zuckerle“ (0,75 l)", preis: 11.5, bg: "#722f37", emoji: "🍷" },
+  { name: "Stuttgarter Brezel (frisch, Bäckerei)", preis: 1.2, bg: "#c68958", emoji: "🥨" },
+  { name: "Bürger Maultaschen „Unsere Besten“ (400 g)", preis: 4.29, bg: "#d9a566", emoji: "🥟" },
+  { name: "Stuttgarter Zeitung (Einzelausgabe Mo–Do)", preis: 1.4, bg: "#4a5a6a", emoji: "📰" },
+  { name: "Cannstatter Wasen – 1 Maß Bier (Festzelt)", preis: 14.4, bg: "#f1a208", emoji: "🍺" },
+  { name: "Ritter Sport Schokolade (100 g Tafel)", preis: 1.79, bg: "#f2b705", emoji: "🍫" },
+];
+
 // Default game descriptions, keyed by type. `old` holds every previous
 // wording so upgradeDefaultDescriptions() can recognize an unedited default
 // and refresh it — but leaves the text alone if the user customized it.
@@ -217,7 +245,14 @@ export async function seedIfEmpty() {
       active: true,
       color: "#ffd166",
       createdAt: now,
-      config: { items: [] },
+      config: {
+        items: PREISSCHAETZEN_ITEMS.map(({ name, preis, bg, emoji }) => ({
+          id: crypto.randomUUID(),
+          name,
+          preis,
+          image: svgIcon(bg, emoji),
+        })),
+      },
     },
     {
       id: crypto.randomUUID(),
@@ -266,6 +301,21 @@ export async function seedFussballMatchesIfEmpty() {
   const game = games.find((g) => g.type === "fussball_quiz");
   if (!game || (game.config.items && game.config.items.length > 0)) return;
   game.config.items = FUSSBALL_MATCHES.map((m) => ({ id: crypto.randomUUID(), ...m }));
+  await db.put("games", game);
+}
+
+// Backfills the Stuttgart-themed items into the Was-kostet-das-Spiel for
+// browsers that already created it (as an empty list). No-op once it has items.
+export async function seedPreisschaetzenItemsIfEmpty() {
+  const games = await db.getAll("games");
+  const game = games.find((g) => g.type === "preisschaetzen");
+  if (!game || (game.config.items && game.config.items.length > 0)) return;
+  game.config.items = PREISSCHAETZEN_ITEMS.map(({ name, preis, bg, emoji }) => ({
+    id: crypto.randomUUID(),
+    name,
+    preis,
+    image: svgIcon(bg, emoji),
+  }));
   await db.put("games", game);
 }
 

@@ -2,6 +2,7 @@ import {
   db,
   seedIfEmpty,
   seedFussballMatchesIfEmpty,
+  seedPreisschaetzenItemsIfEmpty,
   seedAchtungKurveIfMissing,
   seedExternalLinkGameIfMissing,
   upgradeDefaultDescriptions,
@@ -407,6 +408,7 @@ function setupSettingsForm() {
 async function init() {
   await seedIfEmpty();
   await seedFussballMatchesIfEmpty();
+  await seedPreisschaetzenItemsIfEmpty();
   await seedAchtungKurveIfMissing();
   await seedExternalLinkGameIfMissing();
   await upgradeDefaultDescriptions();
