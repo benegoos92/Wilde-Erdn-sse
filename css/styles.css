@@ -319,12 +319,6 @@ textarea { min-height: 70px; resize: vertical; }
   border-radius: 8px; width: 40px; height: 40px; font-size: 1.1rem; cursor: pointer;
 }
 
-.ranking-compare { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-.ranking-compare > div { flex: 1; min-width: 220px; text-align: left; }
-.ranking-compare ol { padding-left: 1.2rem; }
-.ranking-compare li { display: flex; align-items: center; margin-bottom: 0.5rem; }
-.ranking-compare img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; }
-
 /* Leaderboard */
 .leaderboard {
   display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;

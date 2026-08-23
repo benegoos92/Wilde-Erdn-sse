@@ -164,8 +164,11 @@ const DEFAULT_DESCRIPTIONS = {
     new: "Ladet eure schönsten Urlaubsfotos hoch – wer errät, wann und wo sie entstanden sind?",
   },
   freio: {
-    old: ["Ladet Fotos von Freio hoch und bringt sie unabhängig voneinander in eure Lieblingsreihenfolge."],
-    new: "Fotos von Freio hochladen und unabhängig voneinander in eure Lieblingsreihenfolge bringen – seid ihr euch einig, welches Bild das beste ist?",
+    old: [
+      "Ladet Fotos von Freio hoch und bringt sie unabhängig voneinander in eure Lieblingsreihenfolge.",
+      "Fotos von Freio hochladen und unabhängig voneinander in eure Lieblingsreihenfolge bringen – seid ihr euch einig, welches Bild das beste ist?",
+    ],
+    new: "Fotos von Freio hochladen und gemeinsam in eure Wunschreihenfolge bringen – kein Duell, sondern eine gemeinsame Rangliste. Welches Bild ist euer Favorit?",
   },
   stuttgart_quiz: {
     old: ["Fun Facts über Stuttgart – wer weiß mehr?"],

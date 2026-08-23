@@ -95,122 +95,83 @@ function playUrlaubsbilder(container, game, players, finish) {
 }
 
 // --- Freio-Bilder-Ranking ------------------------------------------------
+// Kein Duell: beide erstellen gemeinsam eine einzige Rangliste. Es gibt
+// keinen Sieger, daher wird die Session ohne Gewinner abgeschlossen.
 function playFreio(container, game, players, finish) {
   const items = game.config.items || [];
   if (items.length < 2) {
     container.innerHTML = `<p class="hint">Für dieses Spiel werden mindestens zwei Fotos benötigt. Fügt zuerst Fotos über "Spiele verwalten" hinzu.</p>`;
-    renderWinnerPicker(container, players, null, finish);
+    finish(null, null);
     return;
   }
 
-  function rankingPhase(playerName, onDone) {
-    let order = shuffle(items);
-    container.innerHTML = "";
-    const intro = document.createElement("p");
-    intro.innerHTML = `<strong>${playerName}</strong> ist dran: Bringt die Bilder in eure Lieblingsreihenfolge (bestes zuerst).`;
-    container.appendChild(intro);
+  const order = shuffle(items);
 
-    const list = document.createElement("ul");
-    list.className = "rank-list";
-    container.appendChild(list);
-
-    function renderList() {
-      list.innerHTML = "";
-      order.forEach((item, idx) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <span class="rank-num">${idx + 1}</span>
-          <img src="${item.image}">
-          <div class="rank-footer">
-            <span class="rank-label">${item.label || ""}</span>
-          </div>
-        `;
-        const btns = document.createElement("span");
-        btns.className = "rank-btns";
-        const up = document.createElement("button");
-        up.textContent = "↑";
-        up.disabled = idx === 0;
-        up.addEventListener("click", () => {
-          [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
-          renderList();
-        });
-        const down = document.createElement("button");
-        down.textContent = "↓";
-        down.disabled = idx === order.length - 1;
-        down.addEventListener("click", () => {
-          [order[idx + 1], order[idx]] = [order[idx], order[idx + 1]];
-          renderList();
-        });
-        btns.appendChild(up);
-        btns.appendChild(down);
-        li.querySelector(".rank-footer").appendChild(btns);
-        list.appendChild(li);
+  function renderCard(item, idx, withButtons) {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="rank-num">${idx + 1}</span>
+      <img src="${item.image}">
+      <div class="rank-footer">
+        <span class="rank-label">${item.label || ""}</span>
+      </div>
+    `;
+    if (withButtons) {
+      const btns = document.createElement("span");
+      btns.className = "rank-btns";
+      const up = document.createElement("button");
+      up.textContent = "↑";
+      up.disabled = idx === 0;
+      up.addEventListener("click", () => {
+        [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
+        renderList();
       });
+      const down = document.createElement("button");
+      down.textContent = "↓";
+      down.disabled = idx === order.length - 1;
+      down.addEventListener("click", () => {
+        [order[idx + 1], order[idx]] = [order[idx], order[idx + 1]];
+        renderList();
+      });
+      btns.appendChild(up);
+      btns.appendChild(down);
+      li.querySelector(".rank-footer").appendChild(btns);
     }
-    renderList();
-
-    const doneBtn = document.createElement("button");
-    doneBtn.className = "btn btn-primary";
-    doneBtn.textContent = "Fertig";
-    doneBtn.addEventListener("click", () => onDone(order));
-    container.appendChild(doneBtn);
+    return li;
   }
 
-  function handoverGate(nextPlayerName, onReady) {
-    container.innerHTML = `
-      <p class="hint">Bildschirm bitte an <strong>${nextPlayerName}</strong> übergeben.<br>
-      (${players[0] === nextPlayerName ? players[1] : players[0]}, bitte kurz wegschauen 🙈)</p>`;
-    const btn = document.createElement("button");
-    btn.className = "btn btn-primary";
-    btn.textContent = `${nextPlayerName} ist bereit`;
-    btn.addEventListener("click", onReady);
-    container.appendChild(btn);
-  }
+  container.innerHTML = "";
+  const intro = document.createElement("p");
+  intro.textContent = "Bringt die Bilder gemeinsam in eure Wunschreihenfolge (bestes zuerst).";
+  container.appendChild(intro);
 
-  rankingPhase(players[0], (orderA) => {
-    handoverGate(players[1], () => {
-      rankingPhase(players[1], (orderB) => {
-        showComparison(orderA, orderB);
-      });
-    });
+  const list = document.createElement("ul");
+  list.className = "rank-list";
+  container.appendChild(list);
+
+  function renderList() {
+    list.innerHTML = "";
+    order.forEach((item, idx) => list.appendChild(renderCard(item, idx, true)));
+  }
+  renderList();
+
+  const doneBtn = document.createElement("button");
+  doneBtn.className = "btn btn-primary";
+  doneBtn.textContent = "Fertig";
+  doneBtn.addEventListener("click", () => {
+    container.innerHTML = `<h3>Eure gemeinsame Rangliste 🎉</h3>`;
+    const finalList = document.createElement("ul");
+    finalList.className = "rank-list";
+    order.forEach((item, idx) => finalList.appendChild(renderCard(item, idx, false)));
+    container.appendChild(finalList);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "btn btn-primary";
+    closeBtn.textContent = "Schließen";
+    closeBtn.addEventListener("click", () => finish(null, null));
+    container.appendChild(closeBtn);
   });
-
-  function showComparison(orderA, orderB) {
-    container.innerHTML = `<h3>Eure Reihenfolgen im Vergleich</h3>`;
-    const wrap = document.createElement("div");
-    wrap.className = "ranking-compare";
-    [
-      [players[0], orderA],
-      [players[1], orderB],
-    ].forEach(([name, order]) => {
-      const col = document.createElement("div");
-      const h = document.createElement("strong");
-      h.textContent = name;
-      col.appendChild(h);
-      const ol = document.createElement("ol");
-      order.forEach((item) => {
-        const li = document.createElement("li");
-        const img = document.createElement("img");
-        img.src = item.image;
-        img.style.marginRight = "0.6rem";
-        li.appendChild(img);
-        ol.appendChild(li);
-      });
-      col.appendChild(ol);
-      wrap.appendChild(col);
-    });
-    container.appendChild(wrap);
-
-    const topMatch = orderA[0]?.id === orderB[0]?.id;
-    const note = document.createElement("p");
-    note.className = "hint";
-    note.textContent = topMatch
-      ? "Ihr seid euch beim Favoriten einig! 🎉"
-      : "Eure Favoriten unterscheiden sich – diskutiert, warum!";
-    container.appendChild(note);
-
-    renderWinnerPicker(container, players, null, finish);
-  }
+  container.appendChild(doneBtn);
 }
 
 // --- Stuttgart-Quiz --------------------------------------------------------
