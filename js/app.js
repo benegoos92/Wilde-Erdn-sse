@@ -3,6 +3,7 @@ import {
   seedIfEmpty,
   seedFussballMatchesIfEmpty,
   seedPreisschaetzenItemsIfEmpty,
+  seedStuttgartQuizQuestionsIfMissing,
   seedAchtungKurveIfMissing,
   seedExternalLinkGameIfMissing,
   upgradeDefaultDescriptions,
@@ -409,6 +410,7 @@ async function init() {
   await seedIfEmpty();
   await seedFussballMatchesIfEmpty();
   await seedPreisschaetzenItemsIfEmpty();
+  await seedStuttgartQuizQuestionsIfMissing();
   await seedAchtungKurveIfMissing();
   await seedExternalLinkGameIfMissing();
   await upgradeDefaultDescriptions();

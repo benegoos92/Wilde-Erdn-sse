@@ -42,6 +42,119 @@ const PREISSCHAETZEN_ITEMS = [
   { name: "Ritter Sport Schokolade (100 g Tafel)", preis: 1.79, bg: "#f2b705", emoji: "🍫" },
 ];
 
+const STUTTGART_QUIZ_BASE_QUESTIONS = [
+  {
+    frage: "Wie heißt das Wahrzeichen auf dem Stuttgarter Fernsehturm-Vorbild-Berg?",
+    optionen: ["Fernsehturm", "Bismarckturm", "Karlshöhe", "Bohnenviertel"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "In welchem Talkessel liegt Stuttgart hauptsächlich?",
+    optionen: ["Nesenbachtal", "Neckartal", "Filstal", "Remstal"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Welches Mineralwasser-Vorkommen ist Stuttgart (nach Budapest) bekannt für?",
+    optionen: [
+      "Größte Mineralwasservorkommen Europas",
+      "Größte Süßwasserquelle Europas",
+      "Einziges Thermalwasser Deutschlands",
+      "Größter Grundwassersee Europas",
+    ],
+    loesungIndex: 0,
+  },
+];
+
+// Zusätzliche Stuttgart-Quiz-Fragen: echte Fun Facts über Stuttgart plus ein
+// paar witzige Golden-Retriever-Fragen (auf Wunsch des Nutzers).
+const STUTTGART_QUIZ_EXTRA_QUESTIONS = [
+  {
+    frage: "Woher stammt der Name Stuttgart ursprünglich?",
+    optionen: [
+      "Von Stutengarten (Gestüt zur Pferdezucht)",
+      "Von Steingarten (steinige Weinberglagen)",
+      "Von einem Stauwehr am Neckar",
+      "Von einem römischen Feldherrn namens Stutgardus",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Was zeigt das Stuttgarter Stadtwappen?",
+    optionen: [
+      "Ein schwarzes, aufbäumendes Ross",
+      "Einen Fernsehturm",
+      "Zwei gekreuzte Weinreben",
+      "Einen Löwen mit Krone",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Wofür ist das Bohnenviertel in Stuttgart bekannt?",
+    optionen: [
+      "Eines der ältesten erhaltenen Wohnviertel der Stadt",
+      "Der größte Weinberg Stuttgarts",
+      "Der Standort des Fernsehturms",
+      "Ein moderner Businessdistrikt",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Welche Bahn bringt Stuttgarter:innen seit über 100 Jahren hinauf nach Degerloch?",
+    optionen: ["Die Zahnradbahn (Zacke)", "Ein Skilift", "Eine Seilbahn über den Neckar", "Ein Rolltreppen-Tunnel"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Was ist an Stuttgart im Vergleich zu anderen deutschen Großstädten ungewöhnlich?",
+    optionen: [
+      "Es gibt Weinberge mitten in der Stadt",
+      "Es hat keinen Hauptbahnhof",
+      "Es liegt komplett eben ohne Hügel",
+      "Es hat keine einzige Ampel",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Der Cannstatter Wasen ist nach dem Münchner Oktoberfest…",
+    optionen: [
+      "das zweitgrößte Volksfest Deutschlands",
+      "das älteste Volksfest der Welt",
+      "ein reines Weinfest ohne Bier",
+      "nur alle zwei Jahre geöffnet",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Golden Retriever wurden ursprünglich für welchen Zweck gezüchtet?",
+    optionen: [
+      "Zum Apportieren von Wasserwild bei der Jagd",
+      "Als reine Wohnzimmer-Kuscheltiere",
+      "Zum Hüten von Schafherden",
+      "Als Wachhunde für Burgen",
+    ],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Was lieben die meisten Golden Retriever über fast alles?",
+    optionen: ["Wasser – sie schwimmen für ihr Leben gern", "Katzen zu ignorieren", "Alleine zu sein", "Stille und Ruhe"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Welches Klischee trifft auf Golden Retriever besonders zu?",
+    optionen: ["Sie tragen ständig irgendetwas im Maul herum", "Sie bellen nie", "Sie hassen jeden Ballwurf", "Sie werden nie nass"],
+    loesungIndex: 0,
+  },
+  {
+    frage: "Was gilt unter Hundebesitzer:innen als Meisterdisziplin eines Golden Retrievers?",
+    optionen: [
+      "Gleichzeitig jeden Menschen im Raum anzubetteln und zu lieben",
+      "Niemals Fell zu verlieren",
+      "Perfekt still zu sitzen",
+      "Wasser komplett zu meiden",
+    ],
+    loesungIndex: 0,
+  },
+];
+
 // Default game descriptions, keyed by type. `old` holds every previous
 // wording so upgradeDefaultDescriptions() can recognize an unedited default
 // and refresh it — but leaves the text alone if the user customized it.
@@ -200,31 +313,10 @@ export async function seedIfEmpty() {
       color: "#7ee0c3",
       createdAt: now,
       config: {
-        items: [
-          {
-            id: crypto.randomUUID(),
-            frage: "Wie heißt das Wahrzeichen auf dem Stuttgarter Fernsehturm-Vorbild-Berg?",
-            optionen: ["Fernsehturm", "Bismarckturm", "Karlshöhe", "Bohnenviertel"],
-            loesungIndex: 0,
-          },
-          {
-            id: crypto.randomUUID(),
-            frage: "In welchem Talkessel liegt Stuttgart hauptsächlich?",
-            optionen: ["Nesenbachtal", "Neckartal", "Filstal", "Remstal"],
-            loesungIndex: 0,
-          },
-          {
-            id: crypto.randomUUID(),
-            frage: "Welches Mineralwasser-Vorkommen ist Stuttgart (nach Budapest) bekannt für?",
-            optionen: [
-              "Größte Mineralwasservorkommen Europas",
-              "Größte Süßwasserquelle Europas",
-              "Einziges Thermalwasser Deutschlands",
-              "Größter Grundwassersee Europas",
-            ],
-            loesungIndex: 0,
-          },
-        ],
+        items: [...STUTTGART_QUIZ_BASE_QUESTIONS, ...STUTTGART_QUIZ_EXTRA_QUESTIONS].map((q) => ({
+          id: crypto.randomUUID(),
+          ...q,
+        })),
       },
     },
     {
@@ -323,6 +415,22 @@ export async function seedPreisschaetzenItemsIfEmpty() {
       image: svgIcon(bg, emoji),
     }))
   );
+  await db.put("games", game);
+}
+
+// Adds the extra Stuttgart-Quiz questions (Stuttgart-Facts + Golden-Retriever
+// fun questions) to browsers that already created the quiz, appending only
+// questions still missing (matched by `frage` text) so questions the user
+// added themselves are kept untouched.
+export async function seedStuttgartQuizQuestionsIfMissing() {
+  const games = await db.getAll("games");
+  const game = games.find((g) => g.type === "stuttgart_quiz");
+  if (!game) return;
+  if (!game.config.items) game.config.items = [];
+  const existingFragen = new Set(game.config.items.map((i) => i.frage));
+  const missing = STUTTGART_QUIZ_EXTRA_QUESTIONS.filter((q) => !existingFragen.has(q.frage));
+  if (missing.length === 0) return;
+  game.config.items.push(...missing.map((q) => ({ id: crypto.randomUUID(), ...q })));
   await db.put("games", game);
 }
 
