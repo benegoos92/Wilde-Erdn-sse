@@ -705,6 +705,7 @@ const PLAYERS_BY_TYPE = {
   fussball_quiz: playFussballQuiz,
   achtung_kurve: playAchtungKurve,
   external_link: playExternalLink,
+  leckerli_verstecken: playFrei,
   frei: playFrei,
 };
 

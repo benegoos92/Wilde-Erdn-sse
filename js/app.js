@@ -6,6 +6,9 @@ import {
   seedStuttgartQuizQuestionsIfMissing,
   seedAchtungKurveIfMissing,
   seedExternalLinkGameIfMissing,
+  seedLeckerliVerstecktenIfMissing,
+  getForcedNextGameId,
+  clearForcedNextGameId,
   upgradeDefaultDescriptions,
   getPlayers,
   setPlayers,
@@ -24,6 +27,7 @@ const GAME_TYPES = [
   { key: "fussball_quiz", label: "Fußballergebnisse-Quiz" },
   { key: "achtung_kurve", label: "Achtung die Kurve" },
   { key: "external_link", label: "Externes Spiel (Link)" },
+  { key: "leckerli_verstecken", label: "Leckerli verstecken" },
   { key: "frei", label: "Freies Spiel (nur Text)" },
 ];
 const TYPE_LABEL = Object.fromEntries(GAME_TYPES.map((t) => [t.key, t.label]));
@@ -93,7 +97,17 @@ async function handleSpin() {
   const active = activeGames();
   if (active.length === 0) return;
   spinBtn.disabled = true;
-  const target = pickWeighted(active, recentGameIdsDesc());
+
+  const forcedId = await getForcedNextGameId();
+  const forcedGame = forcedId ? active.find((g) => g.id === forcedId) : null;
+  let target;
+  if (forcedGame) {
+    target = forcedGame;
+    await clearForcedNextGameId();
+  } else {
+    target = pickWeighted(active, recentGameIdsDesc());
+  }
+
   await wheel.spin(target);
   spinBtn.disabled = false;
   openResultModal(target);
@@ -413,6 +427,7 @@ async function init() {
   await seedStuttgartQuizQuestionsIfMissing();
   await seedAchtungKurveIfMissing();
   await seedExternalLinkGameIfMissing();
+  await seedLeckerliVerstecktenIfMissing();
   await upgradeDefaultDescriptions();
   await refreshData();
 

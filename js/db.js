@@ -209,6 +209,10 @@ const DEFAULT_DESCRIPTIONS = {
     old: [],
     new: "Schätzt gemeinsam Entfernungen auf der Karte. Wer nach allen Runden die meisten Punkte hat, gewinnt.",
   },
+  leckerli_verstecken: {
+    old: [],
+    new: "Versteckt ein Leckerli für Freio irgendwo in der Wohnung – gemeinsam müsst ihr es mit seiner Spürnase wiederfinden. Wie lange braucht ihr?",
+  },
 };
 
 let dbPromise = null;
@@ -499,6 +503,42 @@ export async function upgradeDefaultDescriptions() {
       await db.put("games", game);
     }
   }
+}
+
+// Adds the "Leckerli verstecken" default game for browsers that don't have
+// it yet, and arms it as the guaranteed next spin (see getForcedNextGameId).
+// The force-arm only happens at creation time, not on every reload.
+export async function seedLeckerliVerstecktenIfMissing() {
+  const games = await db.getAll("games");
+  if (games.some((g) => g.type === "leckerli_verstecken")) return;
+  const id = crypto.randomUUID();
+  await db.put("games", {
+    id,
+    title: "Leckerli verstecken",
+    description: DEFAULT_DESCRIPTIONS.leckerli_verstecken.new,
+    type: "leckerli_verstecken",
+    active: true,
+    color: "#f4845f",
+    createdAt: Date.now(),
+    config: {},
+  });
+  await setForcedNextGameId(id);
+}
+
+// "Garantiert nächste Runde": pickWeighted's usual randomness is skipped once
+// for this game id, then the flag clears itself. Used so a newly added game
+// can be guaranteed as the very next spin instead of waiting on luck.
+export async function getForcedNextGameId() {
+  const rec = await db.get("settings", "forcedNextGameId");
+  return rec ? rec.gameId : null;
+}
+
+export async function clearForcedNextGameId() {
+  await db.delete("settings", "forcedNextGameId");
+}
+
+async function setForcedNextGameId(gameId) {
+  await db.put("settings", { key: "forcedNextGameId", gameId });
 }
 
 export async function getPlayers() {
